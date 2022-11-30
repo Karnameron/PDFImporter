@@ -6,26 +6,61 @@
                  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                  template="template.xhtml">
 
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <h:form id="frm">
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <p:commandButton value="Novo" update="@form" icon="pi pi-file-o"
+                                     actionListener="#{documentoBean.novo()}"
+                                     ></p:commandButton>
 
-    <p:growl id="messages" showDetail="true"/>
+                    <p:commandButton value="Salvar" update="@form" icon="pi pi-save" rendered="#{documentoBean.estadoTela.name() != 'BUSCANDO'}"
+                                     actionListener="#{documentoBean.salvar()}"
+                                     ></p:commandButton>
 
-    <div class="card">
-        <h5>Single</h5>
-        <h:form enctype="multipart/form-data">
-            <p:fileUpload value="#{fileUploadView.file}" mode="simple" skinSimple="true"/>
+                    <p:commandButton  update="@form"
+                                      value="#{documentoBean.estadoTela.name() != 'BUSCANDO'?'Voltar':'Buscar'}"
+                                      icon="#{documentoBean.estadoTela.name() != 'BUSCANDO'?'pi pi-undo':'pi pi-search'}"
+                                      actionListener="#{documentoBean.buscar()}"
+                                      ></p:commandButton>
+                </p:toolbarGroup>
+            </p:toolbar>
+            <p:messages showDetail="true" ></p:messages>
+            <p:growl></p:growl>
+            <p:panelGrid columns="2"
+                         rendered="#{documentoBean.estadoTela.name() != 'BUSCANDO'}">
 
-            <p:commandButton value="Submit" ajax="false" action="#{fileUploadView.save()}" styleClass="mt-3 ui-button-outlined block"/>
+                <p:outputLabel value="Documento"></p:outputLabel>
+                <p:fileUpload mode="simple" skinSimple="true" auto="true"
+                              process="@this" update="@form"
+                              listener="#{documentoBean.enviarArquivo}"/>
+                <p:outputLabel value="Documento: "></p:outputLabel>
+                <p:outputLabel value="#{documentoBean.entidade.nome}"></p:outputLabel>
+
+            </p:panelGrid>
+
+            <p:dataTable value="#{documentoBean.entidades}" var="doc"
+                         rendered="#{documentoBean.estadoTela.name() == 'BUSCANDO'}">
+                <p:column>
+                    <p:commandButton value="Visualizar" actionListener="#{documentoBean.visuzaliaDoc(doc)}" oncomplete="PF('dilogVisualizaDoc').show()" update="@form"></p:commandButton>
+                </p:column>
+                <p:column headerText="ID">
+                    <h:outputText value="#{doc.id}"></h:outputText>
+                </p:column>
+                <p:column headerText="Nome">
+                    <h:outputText value="#{doc.nome}"></h:outputText>
+                </p:column>
+            </p:dataTable>
+            <p:dialog header="Visualizar" modal="true" width="60%" height="500" visible="#{documentoBean.docVisualiza != null}" 
+                      widgetVar="dilogVisualizaDoc" dynamic="true">
+                <p:ajax event="close" listener="#{documentoBean.fechaVisualizacao()}" update="@form"></p:ajax>
+                <embed style="width: 100%; height: 500px" src="documento?id=#{documentoBean.docVisualiza.id}"></embed>
+            </p:dialog>
         </h:form>
-    </div>
 
-    <div class="card">
-        <h5>Multiple</h5>
-        <h:form enctype="multipart/form-data">
-            <p:fileUpload value="#{fileUploadView.files}" mode="simple" skinSimple="true" multiple="true"/>
-            <p:commandButton value="Submit" ajax="false" action="#{fileUploadView.uploadMultiple}" styleClass="mt-3 ui-button-outlined block"/>
-        </h:form>
-    </div>
+    </h:body>
 
 </ui:composition>
-
-
